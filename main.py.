@@ -1,0 +1,42 @@
+import streamlit as st
+import requests
+import pandas as pd
+
+# --- 1. LAS REGLAS (Lo que me pasaste) ---
+# Estos datos vienen del PDF del CUR 2024
+REGLAS = {
+    "USAB1": {"altura_max": 9.0, "descripcion": "Unidad de Sustentabilidad de Altura Baja 1"},
+    "USAB2": {"altura_max": 11.2, "descripcion": "Unidad de Sustentabilidad de Altura Baja 2"},
+    "USAM":  {"altura_max": 22.8, "descripcion": "Unidad de Sustentabilidad de Altura Media"},
+    "USAA":  {"altura_max": 31.2, "descripcion": "Unidad de Sustentabilidad de Altura Alta"}
+}
+
+# --- 2. LA FUNCIÓN DE VALIDACIÓN ---
+def validar_proyecto(zona, altura_proyectada):
+    if zona not in REGLAS:
+        return "⚠️ Zona no encontrada en el diccionario."
+    
+    limite = REGLAS[zona]["altura_max"]
+    if altura_proyectada > limite:
+        return f"❌ Error: La altura de {altura_proyectada}m supera los {limite}m permitidos para {zona}."
+    return f"✅ El proyecto cumple con la altura máxima de {limite}m para {zona}."
+
+# --- 3. LA INTERFAZ DE LA APP ---
+st.title("🏗️ Asistente Normativo CABA")
+
+# Entradas del usuario
+col1, col2 = st.columns(2)
+with col1:
+    zona_input = st.selectbox("Seleccioná la zona del terreno:", list(REGLAS.keys()))
+with col2:
+    altura_input = st.number_input("Altura proyectada (metros):", min_value=0.0, step=0.1)
+
+# Botón para ejecutar la lógica
+if st.button("Verificar Normativa"):
+    resultado = validar_proyecto(zona_input, altura_input)
+    if "❌" in resultado:
+        st.error(resultado)
+    else:
+        st.success(resultado)
+    
+    st.info(f"**Detalle de zona:** {REGLAS[zona_input]['descripcion']}")
